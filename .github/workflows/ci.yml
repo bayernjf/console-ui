@@ -1,0 +1,23 @@
+name: token-sync
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The consumer repos live as siblings on a developer machine; CI cannot
+      # see them, so this gate only verifies the sync script parses and the
+      # --check mode reports consumers as missing (rather than failing the run).
+      # The embedded copies are pinned by tokens.lock and gated in each
+      # consumer's own CI (ops-console / model-hub).
+      - name: Script smoke check
+        run: node --check scripts/sync.mjs && node --check scripts/check-tokens.mjs
