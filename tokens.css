@@ -1,0 +1,41 @@
+/*
+ * @bayjf/console-ui — canonical Tier 0 design tokens.
+ *
+ * This file is the single source of truth for the dark industrial console
+ * palette shared by ops-console, model-hub and the tier0 landing sites.
+ * Consumers embed the block below verbatim (see scripts/sync.mjs) and pin its
+ * hash in tokens.lock; their CI fails when the copy drifts.
+ *
+ * Do not redefine these variables in a consumer — add the new value here and
+ * run `node scripts/sync.mjs` from this repo.
+ */
+:root {
+  --steel-950: #06090b;
+  --steel-900: #0a0f12;
+  --steel-850: #0f151a;
+  --steel-800: #141c22;
+  --steel-700: #1c262e;
+  --steel-600: #27343d;
+  --steel-500: #384954;
+  --steel-400: #566b78;
+
+  --power: #ffb020; /* decision gates / amber hold */
+  --power-dim: #7a5310;
+  --data: #35e0f0; /* goods & data flow */
+  --data-dim: #12626d;
+  --ok: #66e07a;
+  --warn: #ff9d2e;
+  --alert: #ff4a3d;
+  --plasma: #b467ff; /* channel adapters */
+
+  --ink: #e8f0f4;
+  --ink-dim: #8ea2ad;
+  --ink-faint: #5d707c;
+
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: "PingFang SC", "Hiragino Sans GB", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --bevel: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --bevel-deep: inset 0 2px 3px rgba(0, 0, 0, 0.8);
+  --hair: 1px solid var(--steel-600);
+}
