@@ -21,3 +21,5 @@ jobs:
       # consumer's own CI (ops-console / model-hub).
       - name: Script smoke check
         run: node --check scripts/sync.mjs && node --check scripts/check-tokens.mjs
+      - name: Sync script unit tests
+        run: npm test
