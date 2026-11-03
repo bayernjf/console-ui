@@ -34,13 +34,18 @@ const CONSUMERS = [
   },
 ];
 
+/** Extract the canonical `:root { … }` block from css text (CRLF-safe). */
+export function canonicalBlockFrom(css) {
+  const normalized = css.replace(/\r\n/g, '\n');
+  const start = normalized.indexOf(':root {');
+  const end = normalized.indexOf('\n}', start);
+  if (start < 0 || end < 0) throw new Error('tokens.css has no :root block');
+  return normalized.slice(start, end + 2);
+}
+
 /** Extract the canonical `:root { … }` block (the only thing shared). */
 export function canonicalBlock() {
-  const css = readFileSync(join(REPO, 'tokens.css'), 'utf8');
-  const start = css.indexOf(':root {');
-  const end = css.indexOf('\n}', start);
-  if (start < 0 || end < 0) throw new Error('tokens.css has no :root block');
-  return css.slice(start, end + 2);
+  return canonicalBlockFrom(readFileSync(join(REPO, 'tokens.css'), 'utf8'));
 }
 
 export function hashBlock(block) {
