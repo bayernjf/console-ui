@@ -21,7 +21,7 @@ const lockPath = process.argv[3] ?? join(dirname(cssPath), 'tokens.lock');
 const css = readFileSync(cssPath, 'utf8');
 const start = css.indexOf(BEGIN);
 const end = css.indexOf(END);
-if (start < 0 || end < start) {
+if (start < 0 || end <= start) {
   console.error(`${cssPath}: missing @bayjf/console-ui markers — run the console-ui sync script`);
   process.exit(1);
 }
