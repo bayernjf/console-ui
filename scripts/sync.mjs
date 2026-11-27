@@ -34,13 +34,18 @@ const CONSUMERS = [
   },
 ];
 
+/** Extract the canonical `:root { … }` block from css text (CRLF-safe). */
+export function canonicalBlockFrom(css) {
+  const normalized = css.replace(/\r\n/g, '\n');
+  const start = normalized.indexOf(':root {');
+  const end = normalized.indexOf('\n}', start);
+  if (start < 0 || end < 0) throw new Error('tokens.css has no :root block');
+  return normalized.slice(start, end + 2);
+}
+
 /** Extract the canonical `:root { … }` block (the only thing shared). */
 export function canonicalBlock() {
-  const css = readFileSync(join(REPO, 'tokens.css'), 'utf8');
-  const start = css.indexOf(':root {');
-  const end = css.indexOf('\n}', start);
-  if (start < 0 || end < 0) throw new Error('tokens.css has no :root block');
-  return css.slice(start, end + 2);
+  return canonicalBlockFrom(readFileSync(join(REPO, 'tokens.css'), 'utf8'));
 }
 
 export function hashBlock(block) {
@@ -54,6 +59,27 @@ export function hashBlock(block) {
 
 function wrapped(block) {
   return `${BEGIN_MARKER}\n${block}\n${END_MARKER}`;
+}
+
+/**
+ * Extract the embedded token block from a consumer css text: the marked block
+ * when present, otherwise the first top-level `:root` block (pre-sync layout).
+ * Throws an actionable error when neither exists instead of slicing garbage.
+ */
+export function extractEmbeddedBlock(css, file) {
+  const start = css.indexOf(BEGIN_MARKER);
+  const end = css.indexOf(END_MARKER);
+  if (start >= 0 && end > start) {
+    return css.slice(start + BEGIN_MARKER.length, end);
+  }
+  const rootStart = css.indexOf(':root {');
+  const rootEnd = rootStart < 0 ? -1 : css.indexOf('\n}', rootStart);
+  if (rootStart < 0 || rootEnd < 0) {
+    throw new Error(
+      `${file}: missing sync markers and no :root block to fall back to — run the console-ui sync script`,
+    );
+  }
+  return css.slice(rootStart, rootEnd + 2);
 }
 
 /** Keep each consumer's local checker byte-identical to the canonical one. */
@@ -113,11 +139,14 @@ function main() {
       continue;
     }
     const css = readFileSync(file, 'utf8');
-    const start = css.indexOf(BEGIN_MARKER);
-    const end = css.indexOf(END_MARKER);
-    const embedded = start >= 0 && end > start
-      ? css.slice(start + BEGIN_MARKER.length, end)
-      : css.slice(css.indexOf(':root {'), css.indexOf('\n}', css.indexOf(':root {')) + 2);
+    let embedded;
+    try {
+      embedded = extractEmbeddedBlock(css, file);
+    } catch (err) {
+      drift += 1;
+      console.error(err.message);
+      continue;
+    }
 
     if (hashBlock(embedded) === hash) {
       if (!checkOnly) {
